@@ -11,6 +11,9 @@ export enum ProcessorStatus {
   carry = 0b00000001,
 }
 
+// Processor Flags (terminology change)
+export const ProcessorFlag = ProcessorStatus;
+
 export enum ClockMode {
   paused,
   running,

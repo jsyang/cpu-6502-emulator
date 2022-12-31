@@ -30,6 +30,9 @@ export class CPU6502 {
   private isExecuting: boolean = false;
   public instructionsExecuted: number = 0;
 
+  // ROM specific
+  public romOffset: number = 0x8000;
+
   // delegates
   public accessMemory: AccessMemoryFunc = () => {
     throw new Error("accessMemory function not configured");
@@ -40,11 +43,17 @@ export class CPU6502 {
     accessMemory,
     logInstructions,
     maxInstructions,
+    romOffset,
   }: {
     accessMemory?: AccessMemoryFunc;
     logInstructions?: boolean;
     maxInstructions?: number;
+    romOffset?: number;
   }) {
+    if (romOffset) {
+      this.romOffset = romOffset;
+    }
+
     if (accessMemory) {
       this.accessMemory = accessMemory;
     }
@@ -131,8 +140,19 @@ export class CPU6502 {
 
       const instruction = cpuOperations[instructionOpCode];
       if (instruction === undefined) {
+        this.programCounter--;
+
+        let romReadString = '';
+
+        if(this.programCounter >= this.romOffset) {
+          romReadString = '(ROM offset)';
+          this.programCounter -= this.romOffset;
+        }
+
+        const pcString = `PC ${romReadString} = 0x${this.programCounter.toString(16).padStart(4, '0')}`;
+
         // invalid opcode! no instruction for this code
-        throw new Error(`Invalid opcode ${instructionOpCode.toString(16)}`);
+        throw new Error(`Invalid opcode ${instructionOpCode.toString(16)}; ${pcString}`);
       }
 
       let instructionParam: number | undefined = undefined;
@@ -211,10 +231,9 @@ export class CPU6502 {
       }
       if (this.logInstructions) {
         console.log(
-          `${instructionAddress.toString(16)}: ${instruction.name}${
-            instructionParam !== undefined
-              ? " [" + instructionParam.toString(16) + "]"
-              : ""
+          `${instructionAddress.toString(16)}: ${instruction.name}${instructionParam !== undefined
+            ? " [" + instructionParam.toString(16) + "]"
+            : ""
           } - ${this.reg_a}`
         );
       }

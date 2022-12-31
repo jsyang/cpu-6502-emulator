@@ -28,6 +28,7 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
+    "start": "ts-node src/demos/1_bookman1.ts",
     "build": "tsc -d",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepublishOnly": "tsc -d"
